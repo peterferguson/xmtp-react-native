@@ -548,14 +548,20 @@ public class XMTPModule: Module {
 		}
 
 		AsyncFunction("sendEncodedContent") { (inboxId: String, topic: String, encodedContentData: [UInt8]) -> String in
-			// V2 ONLY
-			guard let conversation = try await findConversation(inboxId: inboxId, topic: topic) else {
-				throw Error.conversationNotFound("no conversation found for \(topic)")
+			func getIdFromGroupTopic(topic: String) -> String {
+				let parts = topic.split(separator: "-")
+				guard let lastPart = parts.last else { return "" }
+				return lastPart.replacingOccurrences(of: "/proto", with: "")
 			}
+
+			guard let group = try await findGroup(inboxId: inboxId, id: getIdFromGroupTopic(topic: topic))
+			else {
+ 				throw Error.conversationNotFound("no conversation found for \(topic)")
+ 			}
 
 			let encodedContent = try EncodedContent(serializedData: Data(encodedContentData))
 
-			return try await conversation.send(encodedContent: encodedContent)
+			return try await group.send(encodedContent: encodedContent)
 		}
 
 		AsyncFunction("listConversations") { (inboxId: String) -> [String] in

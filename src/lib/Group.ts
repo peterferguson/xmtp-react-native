@@ -78,6 +78,22 @@ export class Group<
     return XMTP.listMemberInboxIds(this.client, this.id)
   }
 
+	private async _sendWithJSCodec<T>(
+        content: T,
+        contentType: XMTP.ContentTypeId,
+      ): Promise<string> {
+        const codec =
+           this.client.codecRegistry[
+             `${contentType.authorityId}/${contentType.typeId}:${contentType.versionMajor}.${contentType.versionMinor}`
+           ]
+  
+        if (!codec) {
+          throw new Error(`no codec found for: ${contentType}`)
+        }
+
+        return await XMTP.sendWithContentType(this.client.address, this.topic, content, codec)
+    }
+
   /**
    * Sends a message to the current group.
    *
@@ -90,9 +106,9 @@ export class Group<
     opts?: SendOptions
   ): Promise<string> {
     // TODO: Enable other content types
-    // if (opts && opts.contentType) {
-    // return await this._sendWithJSCodec(content, opts.contentType)
-    // }
+    if (opts && opts.contentType) {
+    return await this._sendWithJSCodec(content, opts.contentType)
+    }
 
     try {
       if (typeof content === 'string') {
@@ -124,9 +140,9 @@ export class Group<
     opts?: SendOptions
   ): Promise<string> {
     // TODO: Enable other content types
-    // if (opts && opts.contentType) {
-    // return await this._sendWithJSCodec(content, opts.contentType)
-    // }
+    if (opts && opts.contentType) {
+    return await this._sendWithJSCodec(content, opts.contentType)
+    }
 
     try {
       if (typeof content === 'string') {

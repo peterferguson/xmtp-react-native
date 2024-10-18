@@ -315,13 +315,13 @@ public class XMTPModule: Module {
 				dbDirectory: authOptions.dbDirectory,
 				historySyncUrl: authOptions.historySyncUrl
 			)
-			let client = try await Client.createOrBuild(account: privateKey, options: options)
+			let client = try await Client.createV3(account: privateKey, options: options)
 
 			await clientsManager.updateClient(key: client.inboxID, client: client)
 			return try ClientWrapper.encodeToObj(client)
 		}
 		
-		AsyncFunction("createOrBuild") { (address: String, hasCreateIdentityCallback: Bool?, hasEnableIdentityCallback: Bool?, hasAuthenticateToInboxCallback: Bool?, dbEncryptionKey: [UInt8]?, authParams: String) in
+		AsyncFunction("createV3") { (address: String, hasCreateIdentityCallback: Bool?, hasEnableIdentityCallback: Bool?, hasAuthenticateToInboxCallback: Bool?, dbEncryptionKey: [UInt8]?, authParams: String) in
 			let authOptions = AuthParamsWrapper.authParamsFromJson(authParams)
 			let signer = ReactNativeSigner(module: self, address: address, isSmartContractWallet: authOptions.isSmartContractWallet, chainId: authOptions.chainId, blockNumber: authOptions.blockNumber)
 			self.signer = signer
@@ -350,7 +350,7 @@ public class XMTPModule: Module {
 				dbDirectory: authOptions.dbDirectory,
 				historySyncUrl: authOptions.historySyncUrl
 			)
-			let client = try await XMTP.Client.createOrBuild(account: signer, options: options)
+			let client = try await XMTP.Client.createV3(account: signer, options: options)
 			await self.clientsManager.updateClient(key: client.inboxID, client: client)
 			self.signer = nil
 			self.sendEvent("authedV3", try ClientWrapper.encodeToObj(client))

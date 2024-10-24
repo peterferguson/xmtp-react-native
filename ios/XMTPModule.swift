@@ -323,7 +323,7 @@ public class XMTPModule: Module {
 		
 		AsyncFunction("createV3") { (address: String, hasCreateIdentityCallback: Bool?, hasEnableIdentityCallback: Bool?, hasAuthenticateToInboxCallback: Bool?, dbEncryptionKey: [UInt8]?, authParams: String) in
 			let authOptions = AuthParamsWrapper.authParamsFromJson(authParams)
-			let signer = ReactNativeSigner(module: self, address: address, isSmartContractWallet: authOptions.isSmartContractWallet, chainId: authOptions.chainId, blockNumber: authOptions.blockNumber)
+			let signer = ReactNativeSigner(module: self, address: address, walletType: authOptions.walletType, chainId: authOptions.chainId, blockNumber: authOptions.blockNumber)
 			self.signer = signer
 			if(hasCreateIdentityCallback ?? false) {
 				self.preCreateIdentityCallbackDeferred = DispatchSemaphore(value: 0)
@@ -371,7 +371,7 @@ public class XMTPModule: Module {
 				dbDirectory: authOptions.dbDirectory,
 				historySyncUrl: authOptions.historySyncUrl
 			)
-			let client = try await XMTP.Client.buildV3(address: address, chainId: authOptions.chainId, options: options)
+			let client = try await XMTP.Client.buildV3(address: address, options: options)
 			await clientsManager.updateClient(key: client.inboxID, client: client)
 			return try ClientWrapper.encodeToObj(client)
 		}

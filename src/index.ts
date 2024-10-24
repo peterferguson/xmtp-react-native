@@ -5,6 +5,7 @@ import { Client } from '.'
 import { ConversationContext } from './XMTP.types'
 import XMTPModule from './XMTPModule'
 import { InboxId } from './lib/Client'
+import { WalletType } from './lib/Signer'
 import { ConsentListEntry, ConsentState } from './lib/ConsentListEntry'
 import {
   ContentCodec,
@@ -225,7 +226,7 @@ export async function createV3(
   dbEncryptionKey?: Uint8Array | undefined,
   dbDirectory?: string | undefined,
   historySyncUrl?: string | undefined,
-  isSmartContractWallet?: boolean | undefined,
+  walletType?: WalletType | undefined,
   chainId?: number | undefined,
   blockNumber?: number | undefined
 ) {
@@ -239,7 +240,7 @@ export async function createV3(
     enableV3,
     dbDirectory,
     historySyncUrl,
-    isSmartContractWallet,
+    walletType,
     chainId,
     blockNumber,
   }
@@ -256,7 +257,6 @@ export async function createV3(
 export async function buildV3(
   address: string,
   environment: 'local' | 'dev' | 'production',
-  chainId?: number | undefined,
   appVersion?: string | undefined,
   enableV3?: boolean | undefined,
   dbEncryptionKey?: Uint8Array | undefined,
@@ -273,7 +273,6 @@ export async function buildV3(
     enableV3,
     dbDirectory,
     historySyncUrl,
-    chainId,
   }
   return await XMTPModule.buildV3(
     address,
@@ -369,7 +368,10 @@ export async function listGroups<
     const members = group['members']?.map((mem: string) => {
       return Member.from(mem)
     })
-    return new Group(client, group, members)
+    const lastMessage = group['lastMessage']
+      ? DecodedMessage.from(group['lastMessage'], client)
+      : undefined
+    return new Group(client, group, members, lastMessage)
   })
 }
 
@@ -1324,7 +1326,7 @@ interface AuthParams {
   enableV3?: boolean
   dbDirectory?: string
   historySyncUrl?: string
-  isSmartContractWallet?: boolean
+  walletType?: string
   chainId?: number
   blockNumber?: number
 }
